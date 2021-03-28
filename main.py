@@ -33,7 +33,7 @@ def vtScan(scan_entry):
                 client.close()
                 break
             else:
-                time.sleep(15)
+                time.sleep(30)
         return
 
 
@@ -88,11 +88,13 @@ def main():
         os.mkdir(".\Scan")
         print("Folder has been generated.. Please place files in the directory and re-run the program.")
         logging.info("Folder has been generated.. Please place files in the directory and re-run the program.")
+        input("Press Enter to continue...")
         exit()
 
-    print("Scanning Completed... Exiting...")
+    print("Scanning Completed... Log saved in the directory of this programs executable.")
     logging.info("Scanning Completed... Exiting...")
     logging.shutdown()
+    input("Press Enter to continue...")
 
 
 if __name__ == '__main__':
