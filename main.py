@@ -3,9 +3,13 @@ import vt
 import os
 import hashlib
 import pprint
+import logging
+import datetime
 
 path = ".\Scan"
 token = os.getenv("VT_API")
+# Initializing the logging service
+logging.basicConfig(filename=f'{datetime.date.today()}.log', encoding='utf-8', level=logging.DEBUG)
 
 # Asks user for Virus Total API token if one is not present in environment variables.
 if not token:
@@ -24,7 +28,7 @@ def vtScan(scan_entry):
         # Checks to see the status of the upload and whether its complete.
         while True:
             analysis = client.get_object("/analyses/{}", analysis.id)
-            print(analysis.status)
+            print(f"Current Status: {analysis.status}")
             if analysis.status == "completed":
                 client.close()
                 break
@@ -55,9 +59,12 @@ def main():
                         file = client.get_object(f"/files/{hashed_file}")
                     except Exception as e:
                         print(f"File {entry.name} has not been scanned on VT: {e}")
+                        logging.warning(f"File {entry.name} has not been scanned on VT: {e}")
                         print("Beginning VT Scan")
+                        logging.info(f"Scanning {entry.name} on Virus Total...")
                         vtScan(entry.path)
                         file = client.get_object(f"/files/{hashed_file}")
+                        logging.info(f"VT Scan of {entry.name} has completed...")
 
                     # Printing information VT has collected on this file.
                     scan_details = file.last_analysis_stats
@@ -67,15 +74,25 @@ def main():
                     pprint.pprint(scan_details)
                     print(f"{file.size} Bytes\n")
 
+                    logging.info(f"File Name: {entry.name}")
+                    logging.info(f"File Hash: {hashed_file}")
+                    logging.info(f"Scan Results: {scan_details}")
+                    logging.info(f"File Size: {file.size} Bytes\n")
 
                     # Closing our VT connection and the file last scanned.
                     client.close()
                     f.close()
     else:
-        print(f"Scan Folder does not exist in the same folder as this program")
+        print("Scan Folder does not exist in the same folder as this program")
+        logging.error("Scan Folder does not exist in the same folder as this program")
         os.mkdir(".\Scan")
         print("Folder has been generated.. Please place files in the directory and re-run the program.")
+        logging.info("Folder has been generated.. Please place files in the directory and re-run the program.")
         exit()
+
+    print("Scanning Completed... Exiting...")
+    logging.info("Scanning Completed... Exiting...")
+    logging.shutdown()
 
 
 if __name__ == '__main__':
